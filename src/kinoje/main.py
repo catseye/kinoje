@@ -6,12 +6,9 @@ Create a movie file from the template and configuration in the given YAML file."
 # Note: just about everything here is subject to change!
 
 from datetime import datetime, timedelta
-from copy import copy
-import math
 from argparse import ArgumentParser
 import os
 import re
-from subprocess import check_call
 import sys
 from tempfile import mkdtemp
 
@@ -22,112 +19,11 @@ try:
 except ImportError:
     from yaml import Loader
 
+from kinoje.utils import LoggingExecutor
+from kinoje.renderer import Renderer
+
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
-
-
-### helpers ###
-
-
-class LoggingExecutor(object):
-    def __init__(self, filename):
-        self.filename = filename
-        self.log = open(filename, 'w')
-
-    def do_it(self, cmd, **kwargs):
-        print cmd
-        try:
-            check_call(cmd, shell=True, stdout=self.log, stderr=self.log, **kwargs)
-        except Exception as e:
-            self.log.close()
-            print str(e)
-            check_call("tail %s" % self.filename, shell=True)
-            sys.exit(1)
-
-    def close(self):
-        self.log.close()
-
-
-def fmod(n, d):
-    return n - d * int(n / d)
-
-
-def tween(t, *args):
-    """Format: after t, each arg should be like
-        ((a, b), c)
-    which means: when t >= a and < b, return c,
-    or like
-        ((a, b), (c, d))
-    which means:
-    when t >= a and < b, return a value between c and d which is proportional to the
-    position between a and b that t is,
-    or like
-        ((a, b), (c, d), f)
-    which means the same as case 2, except the function f is applied to the value between c and d
-    before it is returned.
-    """
-    nargs = []
-    for x in args:
-        a = x[0]
-        b = x[1]
-        if not isinstance(x[1], tuple):
-            b = (x[1], x[1])
-        if len(x) == 2:
-            f = lambda z: z
-        else:
-            f = x[2]
-        nargs.append((a, b, f))
-
-    for ((low, hi), (sc_low, sc_hi), f) in nargs:
-        if t >= low and t < hi:
-            pos = (t - low) / (hi - low)
-            sc = sc_low + ((sc_hi - sc_low) * pos)
-            return f(sc)
-    raise ValueError(t)
-
-
-### renderer ###
-
-
-class Renderer(object):
-    def __init__(self, dirname, template, config, fun_context, options, exe):
-        self.dirname = dirname
-        self.template = template
-        self.config = config
-        self.fun_context = fun_context
-        self.options = options
-        self.exe = exe
-
-        render_type = config.get('type', 'povray')
-        if render_type == 'povray':
-            self.cmd_template = "povray -D +I{infile} +O{outfile} +W{width} +H{height} +A"
-        elif render_type == 'svg':
-            self.cmd_template = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
-        else:
-            raise NotImplementedError
-
-    def render_frame(self, frame, t):
-        out_pov = os.path.join(self.dirname, 'out.pov')
-        context = copy(self.config)
-        context.update(self.fun_context)
-        context.update({
-            'width': float(self.options.width),
-            'height': float(self.options.height),
-            't': t,
-            'math': math,
-            'tween': tween,
-            'fmod': fmod,
-        })
-        with open(out_pov, 'w') as f:
-            f.write(self.template.render(context))
-        fn = os.path.join(self.dirname, self.options.frame_fmt % frame)
-        cmd = self.cmd_template.format(
-            infile=out_pov, outfile=fn, width=self.options.width, height=self.options.height
-        )
-        self.exe.do_it(cmd)
-
-
-### main ###
 
 
 def main():
@@ -272,7 +168,7 @@ def main():
 
         print "t=%s (%s%% done, eta %s)" % (t, int(((t - options.start) / options.stop) * 100), eta)
 
-        renderer.render_frame(frame, t)
+        fn = renderer.render_frame(frame, t)
 
         t += t_step
 
