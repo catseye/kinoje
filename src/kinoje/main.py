@@ -26,6 +26,9 @@ except ImportError:
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
+### helpers ###
+
+
 class LoggingExecutor(object):
     def __init__(self, filename):
         self.filename = filename
@@ -83,6 +86,50 @@ def tween(t, *args):
     raise ValueError(t)
 
 
+### renderer ###
+
+
+class Renderer(object):
+    def __init__(self, dirname, template, config, fun_context, options, exe):
+        self.dirname = dirname
+        self.template = template
+        self.config = config
+        self.fun_context = fun_context
+        self.options = options
+        self.exe = exe
+
+        render_type = config.get('type', 'povray')
+        if render_type == 'povray':
+            self.cmd_template = "povray -D +I{infile} +O{outfile} +W{width} +H{height} +A"
+        elif render_type == 'svg':
+            self.cmd_template = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
+        else:
+            raise NotImplementedError
+
+    def render_frame(self, frame, t):
+        out_pov = os.path.join(self.dirname, 'out.pov')
+        context = copy(self.config)
+        context.update(self.fun_context)
+        context.update({
+            'width': float(self.options.width),
+            'height': float(self.options.height),
+            't': t,
+            'math': math,
+            'tween': tween,
+            'fmod': fmod,
+        })
+        with open(out_pov, 'w') as f:
+            f.write(self.template.render(context))
+        fn = os.path.join(self.dirname, self.options.frame_fmt % frame)
+        cmd = self.cmd_template.format(
+            infile=out_pov, outfile=fn, width=self.options.width, height=self.options.height
+        )
+        self.exe.do_it(cmd)
+
+
+### main ###
+
+
 def main():
     argparser = ArgumentParser()
     
@@ -121,6 +168,8 @@ def main():
         help="The number of frames to render for each second.  Note that the "
              "tool that makes a movie file from images might not honour this value exactly."
     )
+    argparser.add_argument("--frame-fmt", default="out%05d.png", type=str)
+
     argparser.add_argument("--still", default=None, type=float, metavar='INSTANT',
         help="If given, generate only a single frame (at the specified instant "
              "betwen 0.0 and 1.0) and display it using eog, instead of building "
@@ -187,7 +236,6 @@ def main():
 
     tempdir = mkdtemp()
 
-    frame_fmt = "out%05d.png"
     framerate = options.fps
 
     duration = options.duration
@@ -212,6 +260,8 @@ def main():
 
     started_at = datetime.now()
 
+    renderer = Renderer(tempdir, template, config, fun_context, options, exe)
+
     for frame in xrange(num_frames):
 
         elapsed = (datetime.now() - started_at).total_seconds()
@@ -222,31 +272,8 @@ def main():
 
         print "t=%s (%s%% done, eta %s)" % (t, int(((t - options.start) / options.stop) * 100), eta)
 
-        out_pov = os.path.join(tempdir, 'out.pov')
-        context = copy(config)
-        context.update(fun_context)
-        context.update({
-            'width': float(options.width),
-            'height': float(options.height),
-            't': t,
-            'math': math,
-            'tween': tween,
-            'fmod': fmod,
-        })
-        with open(out_pov, 'w') as f:
-            f.write(template.render(context))
-        fn = os.path.join(tempdir, frame_fmt % frame)
-        render_type = config.get('type', 'povray')
-        if render_type == 'povray':
-            cmd_template = "povray -D +I{infile} +O{outfile} +W{width} +H{height} +A"
-        elif render_type == 'svg':
-            cmd_template = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
-        else:
-            raise NotImplementedError
-        cmd = cmd_template.format(
-            infile=out_pov, outfile=fn, width=options.width, height=options.height
-        )
-        exe.do_it(cmd)
+        renderer.render_frame(frame, t)
+
         t += t_step
 
         if options.still is not None:
@@ -257,7 +284,7 @@ def main():
         # TODO: show some warning if this is not an integer delay
         delay = int(100.0 / framerate)
 
-        filenames = [os.path.join(tempdir, frame_fmt % f) for f in xrange(0, num_frames)]
+        filenames = [os.path.join(tempdir, options.frame_fmt % f) for f in xrange(0, num_frames)]
         if options.twitter:
             filespec = ' '.join(filenames[:-1] + ['-delay', str(delay / 2), filenames[-1]])
         else:
@@ -272,7 +299,7 @@ def main():
         if options.view:
             exe.do_it("eog %s" % outfilename)
     elif outext in ('.mp4', '.m4v'):
-        ifmt = os.path.join(tempdir, frame_fmt)
+        ifmt = os.path.join(tempdir, options.frame_fmt)
         # fun fact: even if you say -r 30, it still picks 25 fps
         cmd = "ffmpeg -i %s -c:v libx264 -profile:v baseline -pix_fmt yuv420p -r %s -y %s" % (
             ifmt, int(framerate), outfilename
