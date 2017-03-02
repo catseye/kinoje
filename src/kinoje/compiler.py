@@ -16,7 +16,7 @@ class GifCompiler(Compiler):
         delay = int(100.0 / self.options.fps)
 
         filenames = [os.path.join(self.dirname, self.options.frame_fmt % f) for f in xrange(0, num_frames)]
-        if self.options.twitter:
+        if self.options.shorten_final_frame:
             filespec = ' '.join(filenames[:-1] + ['-delay', str(delay / 2), filenames[-1]])
         else:
             filespec = ' '.join(filenames)

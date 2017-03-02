@@ -44,11 +44,10 @@ def main():
     argparser.add_argument("--width", default=320, type=int)
     argparser.add_argument("--height", default=200, type=int)
 
-    argparser.add_argument("--tiny", default=False, action='store_true')
-    argparser.add_argument("--small", default=False, action='store_true')
-    argparser.add_argument("--big", default=False, action='store_true')
-    argparser.add_argument("--huge", default=False, action='store_true')
-    argparser.add_argument("--giant", default=False, action='store_true')
+    argparser.add_argument("--size", default=None, type=str,
+        help=''
+    )
+
     argparser.add_argument("--square", default=False, action='store_true')
 
     argparser.add_argument("--start", default=0.0, type=float, metavar='INSTANT',
@@ -73,29 +72,22 @@ def main():
              "the whole movie."
     )
     argparser.add_argument("--view", default=False, action='store_true')
-    argparser.add_argument("--twitter", default=False, action='store_true',
-        help="Make the last frame in a GIF animation delay only half as long."
+    argparser.add_argument("--shorten-final-frame", default=False, action='store_true',
+        help="Make the last frame in a GIF animation delay only half as long. "
+             "Might make looping smoother when uploaded to Twitter. YMMV."
     )
 
     argparser.add_argument("--config", default=None, type=str)
 
     options = argparser.parse_args(sys.argv[1:])
 
-    if options.tiny:
-        options.width = 160
-        options.height = 100
-    if options.small:
-        options.width = 320
-        options.height = 200
-    if options.big:
-        options.width = 640
-        options.height = 400
-    if options.huge:
-        options.width = 800
-        options.height = 600
-    if options.giant:
-        options.width = 1280
-        options.height = 800
+    options.width, options.height = {
+        'tiny': (160, 100),
+        'small': (320, 200),
+        'big': (640, 400),
+        'huge': (800, 600),
+        'giant': (1280, 800),
+    }[options.size] if options.size is not None else (options.width, options.height)
 
     if options.square:
         options.height = options.width
