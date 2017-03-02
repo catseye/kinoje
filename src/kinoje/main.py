@@ -8,7 +8,7 @@ Create a movie file from the template and configuration in the given YAML file."
 from datetime import datetime, timedelta
 from copy import copy
 import math
-from optparse import OptionParser
+from argparse import ArgumentParser
 import os
 import re
 from subprocess import check_call
@@ -81,40 +81,47 @@ def tween(t, *args):
 
 
 def main():
-    optparser = OptionParser(__doc__)
-    optparser.add_option("--width", default=320, type=int)
-    optparser.add_option("--height", default=200, type=int)
+    argparser = ArgumentParser()
+    
+    argparser.add_argument('configfile', metavar='FILENAME', type=str,
+        help='A YAML file containing the template to render for each frame, '
+             'as well as configuration for rendering the template.'
+    )
+    argparser.add_argument('-o', '--output', metavar='FILENAME', type=str, default=None)
 
-    optparser.add_option("--tiny", default=False, action='store_true')
-    optparser.add_option("--small", default=False, action='store_true')
-    optparser.add_option("--big", default=False, action='store_true')
-    optparser.add_option("--huge", default=False, action='store_true')
-    optparser.add_option("--giant", default=False, action='store_true')
-    optparser.add_option("--square", default=False, action='store_true')
+    argparser.add_argument("--width", default=320, type=int)
+    argparser.add_argument("--height", default=200, type=int)
 
-    optparser.add_option("--start", default=0.0, type=float, metavar='INSTANT',
+    argparser.add_argument("--tiny", default=False, action='store_true')
+    argparser.add_argument("--small", default=False, action='store_true')
+    argparser.add_argument("--big", default=False, action='store_true')
+    argparser.add_argument("--huge", default=False, action='store_true')
+    argparser.add_argument("--giant", default=False, action='store_true')
+    argparser.add_argument("--square", default=False, action='store_true')
+
+    argparser.add_argument("--start", default=0.0, type=float, metavar='INSTANT',
         help="t-value at which to start rendering the movie.  Default=0.0"
     )
-    optparser.add_option("--stop", default=1.0, type=float, metavar='INSTANT',
+    argparser.add_argument("--stop", default=1.0, type=float, metavar='INSTANT',
         help="t-value at which to stop rendering the movie.  Default=1.0"
     )
-    optparser.add_option("--duration", default=None, type=float, metavar='SECONDS',
+    argparser.add_argument("--duration", default=None, type=float, metavar='SECONDS',
         help="Override the duration specified in the configuration."
     )
 
-    optparser.add_option("--fps", default=25.0, type=float, metavar='FPS',
+    argparser.add_argument("--fps", default=25.0, type=float, metavar='FPS',
         help="The number of frames to render for each second.  Note that the "
              "tool that makes a movie file from images might not honour this value exactly."
     )
-    optparser.add_option("--still", default=None, type=float)
-    optparser.add_option("--view", default=False, action='store_true')
-    optparser.add_option("--twitter", default=False, action='store_true',
+    argparser.add_argument("--still", default=None, type=float)
+    argparser.add_argument("--view", default=False, action='store_true')
+    argparser.add_argument("--twitter", default=False, action='store_true',
         help="Make the last frame in a GIF animation delay only half as long."
     )
 
-    optparser.add_option("--config", default=None, type=str)
+    argparser.add_argument("--config", default=None, type=str)
 
-    (options, args) = optparser.parse_args(sys.argv[1:])
+    options = argparser.parse_args(sys.argv[1:])
 
     if options.tiny:
         options.width = 160
@@ -139,10 +146,9 @@ def main():
         options.duration = 1.0
         options.start = options.still
 
-    infilename = args[0]
-    try:
-        outfilename = args[1]
-    except IndexError:
+    infilename = options.configfile
+    outfilename = options.output
+    if options.output is None:
         (inbase, inext) = os.path.splitext(infilename)
         outfilename = inbase + '.mp4'
     (whatever, outext) = os.path.splitext(outfilename)

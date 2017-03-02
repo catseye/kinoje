@@ -23,11 +23,11 @@ On Ubuntu 16.04, you can install these with:
 
 You can then run the tool from the repository directory like so:
 
-    bin/kinoje eg/moebius.yaml moebius.mp4
+    bin/kinoje eg/moebius.yaml -o moebius.mp4
 
 You can also ask it to create a GIF by using that file extension:
 
-    bin/kinoje eg/squares.yaml squares.gif --duration=2.0
+    bin/kinoje eg/squares.yaml --output=squares.gif --duration=2.0
 
 No further documentation on how to use the tool will be given, as it is all very subject to change
 right now.
