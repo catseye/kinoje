@@ -1,0 +1,28 @@
+duration: 1.44
+template: |-
+  global_settings { assumed_gamma 2.2 }
+  
+  #include "colors.inc"
+  #include "textures.inc"
+  #include "woods.inc"
+  
+  light_source { <-20, 50, 10> color White }
+  light_source { <30, 50, 0> color White }
+  
+  camera { location <0, 20, -20> look_at <0, 0, 0> }
+  
+  #declare Bar = box { <-4.0, -1.0, -0.5>, <4.0, 1.0, 0.5> }
+  
+  {% set offset = tween(t, ((0.0, 1.0), (0.0, 180.0)), ) %}
+  {% for angle in range(0, 360, 15) %}
+    object { Bar
+      transform {
+        rotate <0, 0, {{ offset + angle / 2.0 }}>
+        translate <7, 0, 0>
+        rotate <0, {{ angle }}, 0>
+      }
+      texture {
+        White_Marble
+      }
+    }
+  {% endfor %}

@@ -1,0 +1,9 @@
+type: svg
+template: |-
+  <?xml version="1.0" standalone="no"?>
+  <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+  <svg viewBox="0 0 400 400" version="1.1">
+    <rect width="100%" height="100%" fill="white" />
+    <rect x="25%" y="25%" width="50%" height="50%" fill="black" transform="rotate({{ t * 90.0 }}      200 200)" />
+    <rect x="37.5%" y="37.5%" width="25%" height="25%" fill="white" transform="rotate({{ t * -90.0 }} 200 200)" />
+  </svg>
