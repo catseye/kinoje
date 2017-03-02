@@ -23,6 +23,9 @@ except ImportError:
     from yaml import Loader
 
 
+SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
+
+
 class LoggingExecutor(object):
     def __init__(self, filename):
         self.filename = filename
@@ -87,7 +90,12 @@ def main():
         help='A YAML file containing the template to render for each frame, '
              'as well as configuration for rendering the template.'
     )
-    argparser.add_argument('-o', '--output', metavar='FILENAME', type=str, default=None)
+    argparser.add_argument('-o', '--output', metavar='FILENAME', type=str, default=None,
+        help='The movie file to create. The extension of this filename '
+             'determines the output format and must be one of %r.  '
+             'If not given, a default name will be chosen based on the '
+             'configuration filename with a .mp4 extension added.' % (SUPPORTED_OUTPUT_FORMATS,)
+    )
 
     argparser.add_argument("--width", default=320, type=int)
     argparser.add_argument("--height", default=200, type=int)
@@ -113,7 +121,11 @@ def main():
         help="The number of frames to render for each second.  Note that the "
              "tool that makes a movie file from images might not honour this value exactly."
     )
-    argparser.add_argument("--still", default=None, type=float)
+    argparser.add_argument("--still", default=None, type=float, metavar='INSTANT',
+        help="If given, generate only a single frame (at the specified instant "
+             "betwen 0.0 and 1.0) and display it using eog, instead of building "
+             "the whole movie."
+    )
     argparser.add_argument("--view", default=False, action='store_true')
     argparser.add_argument("--twitter", default=False, action='store_true',
         help="Make the last frame in a GIF animation delay only half as long."
@@ -149,10 +161,9 @@ def main():
     infilename = options.configfile
     outfilename = options.output
     if options.output is None:
-        (inbase, inext) = os.path.splitext(infilename)
+        (inbase, inext) = os.path.splitext(os.path.basename(infilename))
         outfilename = inbase + '.mp4'
     (whatever, outext) = os.path.splitext(outfilename)
-    SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
     if outext not in SUPPORTED_OUTPUT_FORMATS:
         raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
 
