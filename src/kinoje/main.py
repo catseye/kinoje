@@ -21,6 +21,7 @@ except ImportError:
 
 from kinoje.utils import LoggingExecutor
 from kinoje.renderer import Renderer
+from kinoje.compiler import GifCompiler, MpegCompiler
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
@@ -132,8 +133,6 @@ def main():
 
     tempdir = mkdtemp()
 
-    framerate = options.fps
-
     duration = options.duration
     if duration is None:
         duration = config['duration']
@@ -141,14 +140,14 @@ def main():
     start_time = options.start * duration
     stop_time = options.stop * duration
     requested_duration = stop_time - start_time
-    num_frames = int(requested_duration * framerate)
-    t_step = 1.0 / (duration * framerate)
+    num_frames = int(requested_duration * options.fps)
+    t_step = 1.0 / (duration * options.fps)
 
     print "Start time: t=%s, %s seconds" % (options.start, start_time)
     print "Stop time: t=%s, %s seconds" % (options.stop, stop_time)
     print "Requested duration: %s seconds" % requested_duration
-    print "Frame rate: %s fps" % framerate
-    print "Number of frames: %s (rounded to %s)" % (requested_duration * framerate, num_frames)
+    print "Frame rate: %s fps" % options.fps
+    print "Number of frames: %s (rounded to %s)" % (requested_duration * options.fps, num_frames)
     print "t-Step: %s" % t_step
 
     exe = LoggingExecutor(os.path.join(tempdir, 'movie.log'))
@@ -176,36 +175,17 @@ def main():
             exe.do_it("eog %s" % fn)
             sys.exit(0)
 
-    if outext == '.gif':
-        # TODO: show some warning if this is not an integer delay
-        delay = int(100.0 / framerate)
+    compiler = {
+        '.gif': GifCompiler,
+        '.mp4': MpegCompiler,
+        '.m4v': MpegCompiler,
+    }[outext](tempdir, outfilename, options, exe)
 
-        filenames = [os.path.join(tempdir, options.frame_fmt % f) for f in xrange(0, num_frames)]
-        if options.twitter:
-            filespec = ' '.join(filenames[:-1] + ['-delay', str(delay / 2), filenames[-1]])
-        else:
-            filespec = ' '.join(filenames)
+    compiler.compile(num_frames)
+    finished_at = datetime.now()
 
-        # -strip is there to force convert to process all input files.  (if no transformation is given,
-        # it can sometimes stop reading input files.  leading to skippy animations.  who knows why.)
-        exe.do_it("convert -delay %s -loop 0 %s -strip %s" % (
-            delay, filespec, outfilename
-        ))
-        finished_at = datetime.now()
-        if options.view:
-            exe.do_it("eog %s" % outfilename)
-    elif outext in ('.mp4', '.m4v'):
-        ifmt = os.path.join(tempdir, options.frame_fmt)
-        # fun fact: even if you say -r 30, it still picks 25 fps
-        cmd = "ffmpeg -i %s -c:v libx264 -profile:v baseline -pix_fmt yuv420p -r %s -y %s" % (
-            ifmt, int(framerate), outfilename
-        )
-        exe.do_it(cmd)
-        finished_at = datetime.now()
-        if options.view:
-            exe.do_it("vlc %s" % outfilename)
-    else:
-        raise NotImplementedError
+    if options.view:
+        compiler.view()
 
     exe.close()
 
