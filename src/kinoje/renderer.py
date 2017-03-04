@@ -6,11 +6,10 @@ from kinoje.utils import fmod, tween
 
 
 class Renderer(object):
-    def __init__(self, dirname, template, config, fun_context, options, exe):
+    def __init__(self, dirname, template, config, options, exe):
         self.dirname = dirname
         self.template = template
         self.config = config
-        self.fun_context = fun_context
         self.options = options
         self.exe = exe
 
@@ -21,6 +20,10 @@ class Renderer(object):
             self.cmd_template = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
         else:
             raise NotImplementedError
+
+        self.fun_context = {}
+        for key, value in self.config.get('functions', {}).iteritems():
+            self.fun_context[key] = eval("lambda x: " + value)
 
     def render_frame(self, frame, t):
         out_pov = os.path.join(self.dirname, 'out.pov')

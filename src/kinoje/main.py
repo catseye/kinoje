@@ -119,10 +119,6 @@ def main():
 
     template = Template(config['template'])
 
-    fun_context = {}
-    for key, value in config.get('functions', {}).iteritems():
-        fun_context[key] = eval("lambda x: " + value)
-
     tempdir = mkdtemp()
 
     duration = options.duration
@@ -147,7 +143,7 @@ def main():
 
     started_at = datetime.now()
 
-    renderer = Renderer(tempdir, template, config, fun_context, options, exe)
+    renderer = Renderer(tempdir, template, config, options, exe)
 
     for frame in xrange(num_frames):
 
