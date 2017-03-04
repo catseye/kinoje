@@ -1,0 +1,44 @@
+render_command_template: povray -D +I{infile} +O{outfile}z.png +W{width} +H{height} +A && convert {outfile}z.png -swirl 80 {outfile}
+template: |-
+  global_settings { assumed_gamma 2.2 }
+  
+  #include "colors.inc"
+  #include "textures.inc"
+  #include "stones.inc"
+  #include "finish.inc"
+  #include "glass.inc"
+  
+  light_source {
+      <-20, 50, 0>
+      color White
+  }
+  
+  camera {
+      location <0, 15, -15>
+      look_at <0, 5, 0>
+  }
+  
+  plane { y, 0
+      pigment {
+          checker color White, color Black
+          scale 4
+      }
+      finish {
+          ambient 0.25
+      }
+  }
+  
+  sphere {
+      <0, {{ t * 15.0 }}, 0>, {{ t * 15.0 }}
+
+      material {
+          texture {
+              pigment { color rgbf <0.98, 1.0, 0.99, 0.75> }
+              finish {
+                  F_Glass4
+                  ambient 0.25
+              }
+          }
+          interior { I_Glass caustics 1 }
+      }
+  }
