@@ -13,14 +13,6 @@ class Renderer(object):
         self.options = options
         self.exe = exe
 
-        render_type = config.get('type', 'povray')
-        if render_type == 'povray':
-            self.cmd_template = "povray -D +I{infile} +O{outfile} +W{width} +H{height} +A"
-        elif render_type == 'svg':
-            self.cmd_template = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
-        else:
-            raise NotImplementedError
-
         self.fun_context = {}
         for key, value in self.config.get('functions', {}).iteritems():
             self.fun_context[key] = eval("lambda x: " + value)
@@ -40,7 +32,7 @@ class Renderer(object):
         with open(out_pov, 'w') as f:
             f.write(self.template.render(context))
         fn = os.path.join(self.dirname, self.options.frame_fmt % frame)
-        cmd = self.cmd_template.format(
+        cmd = self.config['render_command_template'].format(
             infile=out_pov, outfile=fn, width=self.options.width, height=self.options.height
         )
         self.exe.do_it(cmd)

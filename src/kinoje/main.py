@@ -125,6 +125,15 @@ def main():
     if duration is None:
         duration = config['duration']
 
+    if 'render_command_template' not in config:
+        render_type = config.get('type', 'povray')
+        if render_type == 'povray':
+            config['render_command_template'] = "povray -D +I{infile} +O{outfile} +W{width} +H{height} +A"
+        elif render_type == 'svg':
+            config['render_command_template'] = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
+        else:
+            raise NotImplementedError
+
     start_time = options.start * duration
     stop_time = options.stop * duration
     requested_duration = stop_time - start_time
