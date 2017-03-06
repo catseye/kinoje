@@ -128,7 +128,7 @@ def main():
     if 'render_command_template' not in config:
         render_type = config.get('type', 'povray')
         if render_type == 'povray':
-            config['render_command_template'] = "povray -D +I{infile} +O{outfile} +W{width} +H{height} +A"
+            config['render_command_template'] = "povray +L{indir} -D +I{infile} +O{outfile} +W{width} +H{height} +A"
         elif render_type == 'svg':
             config['render_command_template'] = "inkscape -z -e {outfile} -w {width} -h {height} {infile}"
         else:

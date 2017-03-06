@@ -33,7 +33,8 @@ class Renderer(object):
             f.write(self.template.render(context))
         fn = os.path.join(self.dirname, self.options.frame_fmt % frame)
         cmd = self.config['render_command_template'].format(
-            infile=out_pov, outfile=fn, width=self.options.width, height=self.options.height
+            infile=out_pov, indir=os.path.dirname(self.options.configfile), outfile=fn,
+            width=self.options.width, height=self.options.height
         )
         self.exe.do_it(cmd)
         return fn
