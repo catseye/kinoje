@@ -1,7 +1,7 @@
 kinoje
 ======
 
-*Version 0.x, subject to change suddenly and erratically*
+*Version 0.1.  Subject to backwards-incompatible changes without notice.*
 
 **kinoje** is a templating-based animation tool.  A provided template is filled out once for each
 frame of the animation; the result of the template expansion is used to create a still image; and
