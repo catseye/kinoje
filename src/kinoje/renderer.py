@@ -9,10 +9,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from kinoje.utils import LoggingExecutor
-
-
-SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
+from kinoje.utils import LoggingExecutor, load_config_file
 
 
 class Renderer(object):
@@ -66,11 +63,7 @@ def main():
 
     exe = LoggingExecutor('movie.log')
 
-    command_template = '???'
     renderer = Renderer(config['command_template'], options.instantsdir, options.framesdir, exe)
     renderer.render_all()
 
     exe.close()
-
-    #run_duration = finished_at - started_at
-    #print "Finished, took %s seconds" % run_duration.total_seconds()

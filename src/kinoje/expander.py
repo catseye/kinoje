@@ -6,38 +6,7 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import LoggingExecutor, fmod, tween
-
-
-def load_config_file(filename):
-    import yaml
-    try:
-        from yaml import CLoader as Loader
-    except ImportError:
-        from yaml import Loader
-
-    with open(filename, 'r') as file_:
-        config = yaml.load(file_, Loader=Loader)
-
-    template = Template(config['template'])
-    config['start'] = float(config.get('start', 0.0))
-    config['stop'] = float(config.get('stop', 1.0))
-    config['fps'] = float(config.get('fps', 25.0))
-    config['width'] = float(config.get('width', 320.0))
-    config['height'] = float(config.get('height', 200.0))
-
-    duration = config['duration']
-    start = config['start']
-    stop = config['stop']
-    fps = config['fps']
-
-    config['start_time'] = start * duration
-    config['stop_time'] = stop * duration
-    config['requested_duration'] = config['stop_time'] - config['start_time']
-    config['num_frames'] = int(config['requested_duration'] * fps)
-    config['t_step'] = 1.0 / (duration * fps)
-
-    return config
+from kinoje.utils import LoggingExecutor, fmod, tween, load_config_file
 
 
 class Expander(object):
@@ -82,6 +51,7 @@ def main():
     options = argparser.parse_args(sys.argv[1:])
 
     config = load_config_file(options.configfile)
+    template = Template(config['template'])
 
     exe = LoggingExecutor('movie.log')
 
@@ -89,7 +59,7 @@ def main():
 
     t = config['start']
     t_step = config['t_step']
-    for frame in xrange(num_frames):
+    for frame in xrange(config['num_frames']):
         expander.fillout_template(frame, t)
         t += t_step
 

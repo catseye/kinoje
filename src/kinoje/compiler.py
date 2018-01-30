@@ -2,14 +2,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-import yaml
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
-from kinoje.utils import LoggingExecutor
-from kinoje.expander import load_config_file
+from kinoje.utils import LoggingExecutor, load_config_file
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
@@ -99,7 +92,7 @@ def main():
 
     config = load_config_file(options.configfile)
 
-    exe = LoggingExecutor(os.path.join(options.framesdir, 'movie.log'))
+    exe = LoggingExecutor('compiler.log')
 
     compiler = {
         '.gif': GifCompiler,
