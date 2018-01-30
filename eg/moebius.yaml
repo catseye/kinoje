@@ -1,4 +1,10 @@
 duration: 1.44
+start: 0.0
+stop: 1.0
+fps: 25.0
+width: 320.0
+height: 200.0
+command_template: povray +L{indir} -D +I{infile} +O{outfile} +W{width} +H{height} +A
 template: |-
   global_settings { assumed_gamma 2.2 }
   

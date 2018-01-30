@@ -1,22 +1,37 @@
+from argparse import ArgumentParser
 import os
+import sys
+
+import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+from kinoje.utils import LoggingExecutor
+from kinoje.expander import load_config_file
+
+
+SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
 class Compiler(object):
-    def __init__(self, dirname, outfilename, options, exe):
+    def __init__(self, dirname, outfilename, config, exe):
         self.dirname = dirname
-        self.options = options
         self.exe = exe
         self.outfilename = outfilename
+        self.config = config
+        self.frame_fmt = "%08d.png"
 
 
 class GifCompiler(Compiler):
     
     def compile(self, num_frames):
         # TODO: show some warning if this is not an integer delay
-        delay = int(100.0 / self.options.fps)
+        delay = int(100.0 / self.config['fps'])
 
-        filenames = [os.path.join(self.dirname, self.options.frame_fmt % f) for f in xrange(0, num_frames)]
-        if self.options.shorten_final_frame:
+        filenames = [os.path.join(self.dirname, self.frame_fmt % f) for f in xrange(0, num_frames)]
+        if self.config.get('shorten_final_frame'):
             filespec = ' '.join(filenames[:-1] + ['-delay', str(delay / 2), filenames[-1]])
         else:
             filespec = ' '.join(filenames)
@@ -34,12 +49,67 @@ class GifCompiler(Compiler):
 class MpegCompiler(Compiler):
 
     def compile(self, num_frames):
-        ifmt = os.path.join(self.dirname, self.options.frame_fmt)
+        ifmt = os.path.join(self.dirname, self.frame_fmt)
         # fun fact: even if you say -r 30, ffmpeg still picks 25 fps
         cmd = "ffmpeg -i %s -c:v libx264 -profile:v baseline -pix_fmt yuv420p -r %s -y %s" % (
-            ifmt, int(self.options.fps), self.outfilename
+            ifmt, int(self.config['fps']), self.outfilename
         )
         self.exe.do_it(cmd)
 
     def view(self):
         self.exe.do_it("vlc %s" % self.outfilename)
+
+
+def main():
+    argparser = ArgumentParser()
+
+    argparser.add_argument('configfile', metavar='FILENAME', type=str,
+        help='Configuration file containing the template and parameters'
+    )
+    argparser.add_argument('framesdir', metavar='DIRNAME', type=str,
+        help='Directory that will be populated with image of each single frame'
+    )
+    argparser.add_argument('output', metavar='FILENAME', type=str,
+        help='The movie file to create. The extension of this filename '
+             'determines the output format and must be one of %r.  '
+             'If not given, a default name will be chosen based on the '
+             'configuration filename with a .mp4 extension added.' % (SUPPORTED_OUTPUT_FORMATS,)
+    )
+
+    #argparser.add_argument("--still", default=None, type=float, metavar='INSTANT',
+    #    help="If given, generate only a single frame (at the specified instant "
+    #         "betwen 0.0 and 1.0) and display it using eog, instead of building "
+    #         "the whole movie."
+    #)
+    #argparser.add_argument("--view", default=False, action='store_true')
+    #argparser.add_argument("--shorten-final-frame", default=False, action='store_true',
+    #    help="Make the last frame in a GIF animation delay only half as long. "
+    #         "Might make looping smoother when uploaded to Twitter. YMMV."
+    #)
+
+    #if options.still is not None:
+    #    exe.do_it("eog %s" % fn)
+    #    sys.exit(0)
+
+    options = argparser.parse_args(sys.argv[1:])
+
+    (whatever, outext) = os.path.splitext(options.output)
+    if outext not in SUPPORTED_OUTPUT_FORMATS:
+        raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
+
+    config = load_config_file(options.configfile)
+
+    exe = LoggingExecutor(os.path.join(options.framesdir, 'movie.log'))
+
+    compiler = {
+        '.gif': GifCompiler,
+        '.mp4': MpegCompiler,
+        '.m4v': MpegCompiler,
+    }[outext](options.framesdir, options.output, config, exe)
+
+    compiler.compile(config['num_frames'])
+
+    #if options.view:
+    #    compiler.view()
+
+    exe.close()
