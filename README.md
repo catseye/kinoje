@@ -33,7 +33,7 @@ filename, in this case `moebius.mp4`.
 
 You can also ask it to create a GIF by specifying an output filename with that as its file extension:
 
-    bin/kinoje eg/squares.yaml -o squares.gif --duration=2.0
+    bin/kinoje eg/squares.yaml -o squares.gif
 
 File Format
 -----------

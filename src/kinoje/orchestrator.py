@@ -18,7 +18,7 @@ def main():
         help='A YAML file containing the template to render for each frame, '
              'as well as configuration for rendering the template.'
     )
-    argparser.add_argument('output', metavar='FILENAME', type=str,
+    argparser.add_argument('-o', '--output', metavar='FILENAME', type=str, default=None,
         help='The movie file to create. The extension of this filename '
              'determines the output format and must be one of %r.  '
              'If not given, a default name will be chosen based on the '
@@ -28,6 +28,12 @@ def main():
     options, unknown = argparser.parse_known_args(sys.argv[1:])
     remainder = ' '.join(unknown)
 
+    if options.output is None:
+        (configbase, configext) = os.path.splitext(os.path.basename(options.configfile))
+        output_filename = configbase + '.mp4'
+    else:
+        output_filename = options.output
+
     exe = Executor()
 
     instants_dir = mkdtemp()
@@ -35,6 +41,6 @@ def main():
 
     exe.do_it("kinoje-expand {} {}".format(options.configfile, instants_dir))
     exe.do_it("kinoje-render {} {} {}".format(options.configfile, instants_dir, frames_dir))
-    exe.do_it("kinoje-compile {} {} {} {}".format(options.configfile, frames_dir, options.output, remainder))
+    exe.do_it("kinoje-compile {} {} {} {}".format(options.configfile, frames_dir, output_filename, remainder))
 
     exe.close()
