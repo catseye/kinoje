@@ -69,20 +69,13 @@ def main():
              'configuration filename with a .mp4 extension added.' % (SUPPORTED_OUTPUT_FORMATS,)
     )
 
-    #argparser.add_argument("--still", default=None, type=float, metavar='INSTANT',
-    #    help="If given, generate only a single frame (at the specified instant "
-    #         "betwen 0.0 and 1.0) and display it using eog, instead of building "
-    #         "the whole movie."
-    #)
-    #argparser.add_argument("--view", default=False, action='store_true')
-    #argparser.add_argument("--shorten-final-frame", default=False, action='store_true',
-    #    help="Make the last frame in a GIF animation delay only half as long. "
-    #         "Might make looping smoother when uploaded to Twitter. YMMV."
-    #)
-
-    #if options.still is not None:
-    #    exe.do_it("eog %s" % fn)
-    #    sys.exit(0)
+    argparser.add_argument("--shorten-final-frame", default=False, action='store_true',
+        help="Make the last frame in a GIF animation delay only half as long. "
+             "Might make looping smoother when uploaded to Twitter. YMMV."
+    )
+    argparser.add_argument("--view", default=False, action='store_true',
+        help="Display the resultant movie."
+    )
 
     options = argparser.parse_args(sys.argv[1:])
 
@@ -91,6 +84,7 @@ def main():
         raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
 
     config = load_config_file(options.configfile)
+    config['shorten_final_frame'] = options.shorten_final_frame
 
     exe = LoggingExecutor('compiler.log')
 
@@ -102,7 +96,7 @@ def main():
 
     compiler.compile(config['num_frames'])
 
-    #if options.view:
-    #    compiler.view()
+    if options.view:
+        compiler.view()
 
     exe.close()

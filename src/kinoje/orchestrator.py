@@ -25,7 +25,8 @@ def main():
              'configuration filename with a .mp4 extension added.' % (SUPPORTED_OUTPUT_FORMATS,)
     )
 
-    options = argparser.parse_args(sys.argv[1:])
+    options, unknown = argparser.parse_known_args(sys.argv[1:])
+    remainder = ' '.join(unknown)
 
     exe = Executor()
 
@@ -34,6 +35,6 @@ def main():
 
     exe.do_it("kinoje-expand {} {}".format(options.configfile, instants_dir))
     exe.do_it("kinoje-render {} {} {}".format(options.configfile, instants_dir, frames_dir))
-    exe.do_it("kinoje-compile {} {} {}".format(options.configfile, frames_dir, options.output))
+    exe.do_it("kinoje-compile {} {} {} {}".format(options.configfile, frames_dir, options.output, remainder))
 
     exe.close()
