@@ -15,13 +15,14 @@ from kinoje.utils import LoggingExecutor, load_config_file
 class Renderer(object):
     """Takes a source directory filled with text files and a destination directory and
     creates one image file in the destination directory from each text file in the source."""
-    def __init__(self, command_template, src, dest, exe, width=320, height=200):
-        self.command_template = command_template
+    def __init__(self, config, src, dest, exe):
+        self.command_template = config['command_template']
+        self.libdir = config['libdir']
         self.src = src
         self.dest = dest
         self.exe = exe
-        self.width = width
-        self.height = height
+        self.width = config['width']
+        self.height = config['height']
 
     def render_all(self):
         for filename in sorted(os.listdir(self.src)):
@@ -35,7 +36,7 @@ class Renderer(object):
     def render(self, frame, full_srcname, full_destname):
         cmd = self.command_template.format(
             infile=full_srcname,
-            indir=self.src,
+            libdir=self.libdir,
             outfile=full_destname,
             width=self.width,
             height=self.height
@@ -58,12 +59,11 @@ def main():
 
     options = argparser.parse_args(sys.argv[1:])
 
-    with open(options.configfile, 'r') as file_:
-        config = yaml.load(file_, Loader=Loader)
+    config = load_config_file(options.configfile)
 
-    exe = LoggingExecutor('movie.log')
+    exe = LoggingExecutor('renderer.log')
 
-    renderer = Renderer(config['command_template'], options.instantsdir, options.framesdir, exe)
+    renderer = Renderer(config, options.instantsdir, options.framesdir, exe)
     renderer.render_all()
 
     exe.close()
