@@ -1,3 +1,4 @@
+duration: 2.0
 command_template: inkscape -z -e {outfile} -w {width} -h {height} {infile}
 template: |-
   <?xml version="1.0" standalone="no"?>
