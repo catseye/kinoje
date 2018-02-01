@@ -1,7 +1,7 @@
 kinoje
 ======
 
-*Version 0.1.  Subject to backwards-incompatible changes without notice.*
+*Version 0.2.  Subject to backwards-incompatible changes without notice.*
 
 **kinoje** is a templating-based animation tool.  A provided template is filled out once for each
 frame of the animation; the result of the template expansion is used to create a still image; and
@@ -33,15 +33,37 @@ filename, in this case `moebius.mp4`.
 
 You can also ask it to create a GIF by specifying an output filename with that as its file extension:
 
-    bin/kinoje eg/squares.yaml -o squares.gif --duration=2.0
+    bin/kinoje eg/squares.yaml -o squares.gif
+
+Theory of Operation
+-------------------
+
+The `kinoje` executable actually calls 3 other executables:
+
+*   `kinoje-expand` fills out the template multiple times, once for each frame of the movie, and
+    saves the expanded templates (which we call "instants") into a directory.
+*   `kinoje-render` takes a directory of instants and creates a set of images, one for each instant,
+    in another directory.  It calls a rendering command specified in the config to do this.
+*   `kinoje-compile` takes a directory of images and turns them into a movie file (`.mp4` or `.gif`).
+
+These executables can also be called directly, if you e.g. already have a directory of instants
+you want to render and compile into a final movie.
 
 File Format
 -----------
 
-The input YAML file must contain, at the minimum, a key called `template` giving a string (typically
-a multi-line string) in Jinja2 syntax, which will be filled out once for each frame.
+The input config file must contain, at the minimum, a key called `template` containing the template,
+and a key `duration` which specifies the duration in seconds of the movie.  It may also contain
+the following keys, or if not, the following defaults will be used:
 
-The context with which it will be filled out is constructed as follows:
+*   `start`: 0.0
+*   `stop`: 1.0
+*   `fps`: 25.0
+*   `width`: 320
+*   `height`: 200
+
+The template is typically a multi-line string in Jinja2 syntax, which will be filled out once for
+each frame.  The context with which it will be filled out is constructed as follows:
 
 *   `t` is a floating point value which will vary from 0.0 on the first frame to 1.0 on the last
     frame.  It is this value which will typically drive the animation.  For example, if the animation

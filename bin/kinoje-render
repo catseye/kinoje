@@ -5,8 +5,8 @@ import sys
 
 sys.path.insert(0, join(dirname(realpath(sys.argv[0])), '..', 'src'))
 
-from kinoje import orchestrator
+from kinoje import renderer
 
 
 if __name__ == '__main__':
-    orchestrator.main()
+    renderer.main()

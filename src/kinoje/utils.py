@@ -1,5 +1,38 @@
+import os
 import sys
 from subprocess import check_call
+
+
+def load_config_file(filename):
+    import yaml
+    try:
+        from yaml import CLoader as Loader
+    except ImportError:
+        from yaml import Loader
+
+    with open(filename, 'r') as file_:
+        config = yaml.load(file_, Loader=Loader)
+
+    config['libdir'] = os.path.dirname(filename)
+
+    config['start'] = float(config.get('start', 0.0))
+    config['stop'] = float(config.get('stop', 1.0))
+    config['fps'] = float(config.get('fps', 25.0))
+    config['width'] = float(config.get('width', 320.0))
+    config['height'] = float(config.get('height', 200.0))
+
+    duration = config['duration']
+    start = config['start']
+    stop = config['stop']
+    fps = config['fps']
+
+    config['start_time'] = start * duration
+    config['stop_time'] = stop * duration
+    config['requested_duration'] = config['stop_time'] - config['start_time']
+    config['num_frames'] = int(config['requested_duration'] * fps)
+    config['t_step'] = 1.0 / (duration * fps)
+
+    return config
 
 
 class LoggingExecutor(object):
@@ -19,6 +52,15 @@ class LoggingExecutor(object):
 
     def close(self):
         self.log.close()
+
+
+class Executor(object):
+    def do_it(self, cmd, **kwargs):
+        print cmd
+        check_call(cmd, shell=True, **kwargs)
+
+    def close(self):
+        pass
 
 
 def fmod(n, d):

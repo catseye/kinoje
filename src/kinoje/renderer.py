@@ -1,40 +1,69 @@
-from copy import copy
-import math
+from argparse import ArgumentParser
+import re
 import os
+import sys
 
-from kinoje.utils import fmod, tween
+import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+from kinoje.utils import LoggingExecutor, load_config_file
 
 
 class Renderer(object):
-    def __init__(self, dirname, template, config, options, exe):
-        self.dirname = dirname
-        self.template = template
-        self.config = config
-        self.options = options
+    """Takes a source directory filled with text files and a destination directory and
+    creates one image file in the destination directory from each text file in the source."""
+    def __init__(self, config, src, dest, exe):
+        self.command_template = config['command_template']
+        self.libdir = config['libdir']
+        self.src = src
+        self.dest = dest
         self.exe = exe
+        self.width = config['width']
+        self.height = config['height']
 
-        self.fun_context = {}
-        for key, value in self.config.get('functions', {}).iteritems():
-            self.fun_context[key] = eval("lambda x: " + value)
+    def render_all(self):
+        for filename in sorted(os.listdir(self.src)):
+            full_srcname = os.path.join(self.src, filename)
+            match = re.match(r'^.*?(\d+).*?$', filename)
+            frame = int(match.group(1))
+            destname = "%08d.png" % frame
+            full_destname = os.path.join(self.dest, destname)
+            self.render(frame, full_srcname, full_destname)
 
-    def render_frame(self, frame, t):
-        out_pov = os.path.join(self.dirname, 'out.pov')
-        context = copy(self.config)
-        context.update(self.fun_context)
-        context.update({
-            'width': float(self.options.width),
-            'height': float(self.options.height),
-            't': t,
-            'math': math,
-            'tween': tween,
-            'fmod': fmod,
-        })
-        with open(out_pov, 'w') as f:
-            f.write(self.template.render(context))
-        fn = os.path.join(self.dirname, self.options.frame_fmt % frame)
-        cmd = self.config['render_command_template'].format(
-            infile=out_pov, indir=os.path.dirname(self.options.configfile), outfile=fn,
-            width=self.options.width, height=self.options.height
+    def render(self, frame, full_srcname, full_destname):
+        cmd = self.command_template.format(
+            infile=full_srcname,
+            libdir=self.libdir,
+            outfile=full_destname,
+            width=self.width,
+            height=self.height
         )
         self.exe.do_it(cmd)
-        return fn
+
+
+def main():
+    argparser = ArgumentParser()
+
+    argparser.add_argument('configfile', metavar='FILENAME', type=str,
+        help='Configuration file containing the template and parameters'
+    )
+    argparser.add_argument('instantsdir', metavar='DIRNAME', type=str,
+        help='Directory containing instants (text file descriptions of each single frame) to render'
+    )
+    argparser.add_argument('framesdir', metavar='DIRNAME', type=str,
+        help='Directory that will be populated with images, one for each frame'
+    )
+
+    options = argparser.parse_args(sys.argv[1:])
+
+    config = load_config_file(options.configfile)
+
+    exe = LoggingExecutor('renderer.log')
+
+    renderer = Renderer(config, options.instantsdir, options.framesdir, exe)
+    renderer.render_all()
+
+    exe.close()
