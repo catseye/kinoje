@@ -1,4 +1,4 @@
-render_command_template: povray -D +I{infile} +O{outfile}z.png +W{width} +H{height} +A && convert {outfile}z.png -swirl 80 {outfile}
+command: povray -D +I{infile} +O{outfile}z.png +W{width} +H{height} +A && convert {outfile}z.png -swirl 80 {outfile}
 template: |-
   global_settings { assumed_gamma 2.2 }
   

@@ -16,7 +16,7 @@ class Renderer(object):
     """Takes a source directory filled with text files and a destination directory and
     creates one image file in the destination directory from each text file in the source."""
     def __init__(self, config, src, dest, exe):
-        self.command_template = config['command_template']
+        self.command = config['command']
         self.libdir = config['libdir']
         self.src = src
         self.dest = dest
@@ -34,7 +34,7 @@ class Renderer(object):
             self.render(frame, full_srcname, full_destname)
 
     def render(self, frame, full_srcname, full_destname):
-        cmd = self.command_template.format(
+        cmd = self.command.format(
             infile=full_srcname,
             libdir=self.libdir,
             outfile=full_destname,
