@@ -41,12 +41,14 @@ def main():
     if outext not in SUPPORTED_OUTPUT_FORMATS:
         raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
 
+    config = load_config_file(options.configfile)
+
     exe = Executor()
 
     instants_dir = mkdtemp()
     frames_dir = mkdtemp()
 
-    expander = Expander(instants_dir, template, config, exe)
+    expander = Expander(instants_dir, config, exe)
     expander.expand_all()
 
     renderer = Renderer(config, instants_dir, frames_dir, exe)
