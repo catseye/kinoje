@@ -2,19 +2,22 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from kinoje.utils import Executor, LoggingExecutor, load_config_file
+from kinoje.utils import Executor, load_config_file
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
 class Compiler(object):
-    def __init__(self, config, dirname, outfilename, exe=None):
+    def __init__(self, config, dirname, outfilename, exe=None, tqdm=None):
         self.dirname = dirname
         self.exe = exe or Executor()
         self.outfilename = outfilename
         self.config = config
         self.frame_fmt = "%08d.png"
+        if not tqdm:
+            def tqdm(x, **kwargs): return x
+        self.tqdm = tqdm
 
     @classmethod
     def get_class_for(cls, filename):
@@ -31,7 +34,10 @@ class Compiler(object):
         raise NotImplementedError
 
     def compile_all(self):
-        return self.compile(self.config['num_frames'])
+        tasks = [lambda: self.compile(self.config['num_frames'])]
+        for task in self.tqdm(tasks):
+            result = task()
+        return result
 
 
 class GifCompiler(Compiler):
@@ -103,12 +109,8 @@ def main():
     config = load_config_file(options.configfile)
     config['shorten_final_frame'] = options.shorten_final_frame
 
-    exe = LoggingExecutor('compiler.log')
-
-    compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output, exe=exe)
+    compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output)
     compiler.compile_all()
 
     if options.view:
         compiler.view()
-
-    exe.close()

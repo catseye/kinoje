@@ -39,14 +39,16 @@ class LoggingExecutor(object):
     def __init__(self, filename):
         self.filename = filename
         self.log = open(filename, 'w')
+        print("logging to {}".format(self.filename))
 
     def do_it(self, cmd, **kwargs):
-        print cmd
+        self.log.write('>>> {}\n'.format(cmd))
+        self.log.flush()
         try:
             check_call(cmd, shell=True, stdout=self.log, stderr=self.log, **kwargs)
         except Exception as e:
             self.log.close()
-            print str(e)
+            print(str(e))
             check_call("tail %s" % self.filename, shell=True)
             sys.exit(1)
 
@@ -56,7 +58,7 @@ class LoggingExecutor(object):
 
 class Executor(object):
     def do_it(self, cmd, **kwargs):
-        print cmd
+        print(cmd)
         check_call(cmd, shell=True, **kwargs)
 
     def close(self):
