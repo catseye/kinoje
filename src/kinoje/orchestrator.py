@@ -12,12 +12,9 @@ except ImportError:
 
 from kinoje.expander import Expander
 from kinoje.renderer import Renderer
-from kinoje.compiler import Compiler
+from kinoje.compiler import Compiler, SUPPORTED_OUTPUT_FORMATS
 
 from kinoje.utils import LoggingExecutor, load_config_file
-
-
-SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
 def main():
@@ -42,9 +39,8 @@ def main():
         output_filename = configbase + '.mp4'
     else:
         output_filename = options.output
-    (whatever, outext) = os.path.splitext(output_filename)
-    if outext not in SUPPORTED_OUTPUT_FORMATS:
-        raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
+
+    CompilerClass = Compiler.get_class_for(output_filename)
 
     config = load_config_file(options.configfile)
 
@@ -63,7 +59,7 @@ def main():
     renderer.render_all()
 
     print('compiling frames to movie...')
-    compiler = Compiler.get_class_for(output_filename)(config, frames_dir, output_filename, exe=exe, tqdm=tqdm)
+    compiler = CompilerClass(config, frames_dir, output_filename, exe=exe, tqdm=tqdm)
     compiler.compile_all()
 
     exe.close()
