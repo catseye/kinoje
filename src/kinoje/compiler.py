@@ -16,6 +16,23 @@ class Compiler(object):
         self.config = config
         self.frame_fmt = "%08d.png"
 
+    @classmethod
+    def get_class_for(cls, filename):
+        (whatever, outext) = os.path.splitext(filename)
+        if outext not in SUPPORTED_OUTPUT_FORMATS:
+            raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
+        return {
+            '.gif': GifCompiler,
+            '.mp4': MpegCompiler,
+            '.m4v': MpegCompiler,
+        }[outext]
+
+    def compile(self, num_frames):
+        raise NotImplementedError
+
+    def compile_all(self):
+        return self.compile(self.config['num_frames'])
+
 
 class GifCompiler(Compiler):
     
@@ -88,13 +105,8 @@ def main():
 
     exe = LoggingExecutor('compiler.log')
 
-    compiler = {
-        '.gif': GifCompiler,
-        '.mp4': MpegCompiler,
-        '.m4v': MpegCompiler,
-    }[outext](options.framesdir, options.output, config, exe)
-
-    compiler.compile(config['num_frames'])
+    compiler = Compiler.get_class_for(options.output)(options.framesdir, options.output, config, exe)
+    compiler.compile_all()
 
     if options.view:
         compiler.view()

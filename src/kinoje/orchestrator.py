@@ -52,10 +52,7 @@ def main():
     renderer = Renderer(config, instants_dir, frames_dir, exe)
     renderer.render_all()
 
-    compiler = {
-        '.gif': GifCompiler,
-        '.mp4': MpegCompiler,
-        '.m4v': MpegCompiler,
-    }[outext](frames_dir, output_filename, config, exe)
+    compiler = Compiler.get_class_for(output_filename)(frames_dir, output_filename, config, exe)
+    compiler.compile_all()
 
     exe.close()
