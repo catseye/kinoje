@@ -6,7 +6,7 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import Executor, fmod, tween, load_config_file
+from kinoje.utils import Executor, fmod, tween, load_config_file, items, zrange
 
 
 class Expander(object):
@@ -22,7 +22,7 @@ class Expander(object):
         self.tqdm = tqdm
 
         self.fun_context = {}
-        for key, value in self.config.get('functions', {}).iteritems():
+        for key, value in items(self.config.get('functions', {})):
             self.fun_context[key] = eval("lambda x: " + value)
 
     def fillout_template(self, frame, t):
@@ -43,7 +43,7 @@ class Expander(object):
     def expand_all(self):
         t = self.config['start']
         t_step = self.config['t_step']
-        for frame in self.tqdm(xrange(self.config['num_frames'])):
+        for frame in self.tqdm(zrange(self.config['num_frames'])):
             self.fillout_template(frame, t)
             t += t_step
 

@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from kinoje.utils import Executor, load_config_file
+from kinoje.utils import Executor, load_config_file, zrange
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
@@ -46,7 +46,7 @@ class GifCompiler(Compiler):
         # TODO: show some warning if this is not an integer delay
         delay = int(100.0 / self.config['fps'])
 
-        filenames = [os.path.join(self.dirname, self.frame_fmt % f) for f in xrange(0, num_frames)]
+        filenames = [os.path.join(self.dirname, self.frame_fmt % f) for f in zrange(0, num_frames)]
         if self.config.get('shorten_final_frame'):
             filespec = ' '.join(filenames[:-1] + ['-delay', str(delay / 2), filenames[-1]])
         else:

@@ -3,6 +3,20 @@ import sys
 from subprocess import check_call
 
 
+def items(d):
+    try:
+        return d.iteritems()
+    except AttributeError:
+        return d.items()
+
+
+def zrange(*args):
+    try:
+        return xrange(*args)
+    except NameError:
+        return range(*args)
+
+
 def load_config_file(filename):
     import yaml
     try:
