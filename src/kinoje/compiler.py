@@ -9,7 +9,7 @@ SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
 class Compiler(object):
-    def __init__(self, dirname, outfilename, config, exe):
+    def __init__(self, config, dirname, outfilename, exe):
         self.dirname = dirname
         self.exe = exe
         self.outfilename = outfilename
@@ -105,7 +105,7 @@ def main():
 
     exe = LoggingExecutor('compiler.log')
 
-    compiler = Compiler.get_class_for(options.output)(options.framesdir, options.output, config, exe)
+    compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output, exe)
     compiler.compile_all()
 
     if options.view:

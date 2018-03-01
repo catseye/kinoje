@@ -12,7 +12,7 @@ from kinoje.utils import LoggingExecutor, fmod, tween, load_config_file
 class Expander(object):
     """Takes a directory and a template (Jinja2) and expands the template a number of times,
     creating a number of filled-out text files in the directory."""
-    def __init__(self, dirname, config, exe):
+    def __init__(self, config, dirname, exe):
         self.dirname = dirname
         self.template = Template(config['template'])
         self.config = config
@@ -61,7 +61,7 @@ def main():
 
     exe = LoggingExecutor('movie.log')
 
-    expander = Expander(options.instantsdir, config, exe)
+    expander = Expander(config, options.instantsdir, exe)
     expander.expand_all()
 
     exe.close()
