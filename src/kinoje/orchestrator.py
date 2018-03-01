@@ -48,13 +48,13 @@ def main():
     instants_dir = mkdtemp()
     frames_dir = mkdtemp()
 
-    expander = Expander(config, instants_dir, exe)
+    expander = Expander(config, instants_dir, exe=exe)
     expander.expand_all()
 
-    renderer = Renderer(config, instants_dir, frames_dir, exe)
+    renderer = Renderer(config, instants_dir, frames_dir, exe=exe)
     renderer.render_all()
 
-    compiler = Compiler.get_class_for(output_filename)(config, frames_dir, output_filename, exe)
+    compiler = Compiler.get_class_for(output_filename)(config, frames_dir, output_filename, exe=exe)
     compiler.compile_all()
 
     exe.close()

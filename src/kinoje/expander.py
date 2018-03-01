@@ -6,17 +6,17 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import LoggingExecutor, fmod, tween, load_config_file
+from kinoje.utils import Executor, LoggingExecutor, fmod, tween, load_config_file
 
 
 class Expander(object):
     """Takes a directory and a template (Jinja2) and expands the template a number of times,
     creating a number of filled-out text files in the directory."""
-    def __init__(self, config, dirname, exe):
+    def __init__(self, config, dirname, exe=None):
         self.dirname = dirname
         self.template = Template(config['template'])
         self.config = config
-        self.exe = exe
+        self.exe = exe or Executor()
 
         self.fun_context = {}
         for key, value in self.config.get('functions', {}).iteritems():
@@ -61,7 +61,7 @@ def main():
 
     exe = LoggingExecutor('movie.log')
 
-    expander = Expander(config, options.instantsdir, exe)
+    expander = Expander(config, options.instantsdir, exe=exe)
     expander.expand_all()
 
     exe.close()

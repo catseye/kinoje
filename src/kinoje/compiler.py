@@ -2,16 +2,16 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from kinoje.utils import LoggingExecutor, load_config_file
+from kinoje.utils import Executor, LoggingExecutor, load_config_file
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
 class Compiler(object):
-    def __init__(self, config, dirname, outfilename, exe):
+    def __init__(self, config, dirname, outfilename, exe=None):
         self.dirname = dirname
-        self.exe = exe
+        self.exe = exe or Executor()
         self.outfilename = outfilename
         self.config = config
         self.frame_fmt = "%08d.png"
@@ -105,7 +105,7 @@ def main():
 
     exe = LoggingExecutor('compiler.log')
 
-    compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output, exe)
+    compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output, exe=exe)
     compiler.compile_all()
 
     if options.view:
