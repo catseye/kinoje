@@ -5,6 +5,10 @@ import re
 import sys
 from tempfile import mkdtemp
 
+from kinoje.expander import Expander
+from kinoje.renderer import Renderer
+from kinoje.compiler import Compiler
+
 from kinoje.utils import Executor, load_config_file
 
 
@@ -33,14 +37,25 @@ def main():
         output_filename = configbase + '.mp4'
     else:
         output_filename = options.output
+    (whatever, outext) = os.path.splitext(output_filename)
+    if outext not in SUPPORTED_OUTPUT_FORMATS:
+        raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
 
     exe = Executor()
 
     instants_dir = mkdtemp()
     frames_dir = mkdtemp()
 
-    exe.do_it("kinoje-expand {} {}".format(options.configfile, instants_dir))
-    exe.do_it("kinoje-render {} {} {}".format(options.configfile, instants_dir, frames_dir))
-    exe.do_it("kinoje-compile {} {} {} {}".format(options.configfile, frames_dir, output_filename, remainder))
+    expander = Expander(instants_dir, template, config, exe)
+    expander.expand_all()
+
+    renderer = Renderer(config, instants_dir, frames_dir, exe)
+    renderer.render_all()
+
+    compiler = {
+        '.gif': GifCompiler,
+        '.mp4': MpegCompiler,
+        '.m4v': MpegCompiler,
+    }[outext](frames_dir, output_filename, config, exe)
 
     exe.close()

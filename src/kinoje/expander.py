@@ -12,9 +12,9 @@ from kinoje.utils import LoggingExecutor, fmod, tween, load_config_file
 class Expander(object):
     """Takes a directory and a template (Jinja2) and expands the template a number of times,
     creating a number of filled-out text files in the directory."""
-    def __init__(self, dirname, template, config, exe):
+    def __init__(self, dirname, config, exe):
         self.dirname = dirname
-        self.template = template
+        self.template = Template(config['template'])
         self.config = config
         self.exe = exe
 
@@ -37,6 +37,13 @@ class Expander(object):
         with open(output_filename, 'w') as f:
             f.write(self.template.render(context))
 
+    def expand_all(self):
+        t = self.config['start']
+        t_step = self.config['t_step']
+        for frame in xrange(self.config['num_frames']):
+            self.fillout_template(frame, t)
+            t += t_step
+
 
 def main():
     argparser = ArgumentParser()
@@ -51,16 +58,10 @@ def main():
     options = argparser.parse_args(sys.argv[1:])
 
     config = load_config_file(options.configfile)
-    template = Template(config['template'])
 
     exe = LoggingExecutor('movie.log')
 
-    expander = Expander(options.instantsdir, template, config, exe)
-
-    t = config['start']
-    t_step = config['t_step']
-    for frame in xrange(config['num_frames']):
-        expander.fillout_template(frame, t)
-        t += t_step
+    expander = Expander(options.instantsdir, config, exe)
+    expander.expand_all()
 
     exe.close()
