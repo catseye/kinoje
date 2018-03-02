@@ -2,22 +2,18 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from kinoje.utils import Executor, load_config_file, zrange
+from kinoje.utils import BaseProcessor, Executor, load_config_file, zrange
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
-class Compiler(object):
-    def __init__(self, config, dirname, outfilename, exe=None, tqdm=None):
+class Compiler(BaseProcessor):
+    def __init__(self, config, dirname, outfilename, **kwargs):
+        super(Compiler, self).__init__(config, **kwargs)
         self.dirname = dirname
-        self.exe = exe or Executor()
         self.outfilename = outfilename
-        self.config = config
         self.frame_fmt = "%08d.png"
-        if not tqdm:
-            def tqdm(x, **kwargs): return x
-        self.tqdm = tqdm
 
     @classmethod
     def get_class_for(cls, filename):

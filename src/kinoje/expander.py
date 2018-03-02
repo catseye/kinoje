@@ -6,21 +6,16 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import Executor, fmod, tween, load_config_file, items, zrange
+from kinoje.utils import BaseProcessor, Executor, fmod, tween, load_config_file, items, zrange
 
 
-class Expander(object):
+class Expander(BaseProcessor):
     """Takes a directory and a template (Jinja2) and expands the template a number of times,
     creating a number of filled-out text files in the directory."""
-    def __init__(self, config, dirname, exe=None, tqdm=None):
+    def __init__(self, config, dirname, **kwargs):
+        super(Expander, self).__init__(config, **kwargs)
         self.dirname = dirname
         self.template = Template(config['template'])
-        self.config = config
-        self.exe = exe or Executor()
-        if not tqdm:
-            def tqdm(x, **kwargs): return x
-        self.tqdm = tqdm
-
         self.fun_context = {}
         for key, value in items(self.config.get('functions', {})):
             self.fun_context[key] = eval("lambda x: " + value)

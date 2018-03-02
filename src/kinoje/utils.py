@@ -3,6 +3,15 @@ import sys
 from subprocess import check_call
 
 
+class BaseProcessor(object):
+    def __init__(self, config, exe=None, tqdm=None):
+        self.config = config
+        self.exe = exe or Executor()
+        if not tqdm:
+            def tqdm(x, **kwargs): return x
+        self.tqdm = tqdm
+
+
 def items(d):
     try:
         return d.iteritems()
