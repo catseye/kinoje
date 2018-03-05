@@ -3,6 +3,29 @@ import sys
 from subprocess import check_call
 
 
+class BaseProcessor(object):
+    def __init__(self, config, exe=None, tqdm=None):
+        self.config = config
+        self.exe = exe or Executor()
+        if not tqdm:
+            def tqdm(x, **kwargs): return x
+        self.tqdm = tqdm
+
+
+def items(d):
+    try:
+        return d.iteritems()
+    except AttributeError:
+        return d.items()
+
+
+def zrange(*args):
+    try:
+        return xrange(*args)
+    except NameError:
+        return range(*args)
+
+
 def load_config_file(filename):
     import yaml
     try:
@@ -39,14 +62,16 @@ class LoggingExecutor(object):
     def __init__(self, filename):
         self.filename = filename
         self.log = open(filename, 'w')
+        print("logging to {}".format(self.filename))
 
     def do_it(self, cmd, **kwargs):
-        print cmd
+        self.log.write('>>> {}\n'.format(cmd))
+        self.log.flush()
         try:
             check_call(cmd, shell=True, stdout=self.log, stderr=self.log, **kwargs)
         except Exception as e:
             self.log.close()
-            print str(e)
+            print(str(e))
             check_call("tail %s" % self.filename, shell=True)
             sys.exit(1)
 
@@ -56,7 +81,7 @@ class LoggingExecutor(object):
 
 class Executor(object):
     def do_it(self, cmd, **kwargs):
-        print cmd
+        print(cmd)
         check_call(cmd, shell=True, **kwargs)
 
     def close(self):

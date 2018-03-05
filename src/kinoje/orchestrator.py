@@ -3,12 +3,18 @@ from argparse import ArgumentParser
 import os
 import re
 import sys
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 
-from kinoje.utils import Executor, load_config_file
+try:
+    from tqdm import tqdm
+except ImportError:
+    def tqdm(x, **kwargs): return x
 
+from kinoje.expander import Expander
+from kinoje.renderer import Renderer
+from kinoje.compiler import Compiler, SUPPORTED_OUTPUT_FORMATS
 
-SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
+from kinoje.utils import LoggingExecutor, load_config_file
 
 
 def main():
@@ -34,13 +40,27 @@ def main():
     else:
         output_filename = options.output
 
-    exe = Executor()
+    CompilerClass = Compiler.get_class_for(output_filename)
+
+    config = load_config_file(options.configfile)
+
+    fd, log_filename = mkstemp()
+    exe = LoggingExecutor(log_filename)
 
     instants_dir = mkdtemp()
     frames_dir = mkdtemp()
 
-    exe.do_it("kinoje-expand {} {}".format(options.configfile, instants_dir))
-    exe.do_it("kinoje-render {} {} {}".format(options.configfile, instants_dir, frames_dir))
-    exe.do_it("kinoje-compile {} {} {} {}".format(options.configfile, frames_dir, output_filename, remainder))
+    print('expanding template to instants...')
+    expander = Expander(config, instants_dir, exe=exe, tqdm=tqdm)
+    expander.expand_all()
+
+    print('rendering instants to frames...')
+    renderer = Renderer(config, instants_dir, frames_dir, exe=exe, tqdm=tqdm)
+    renderer.render_all()
+
+    print('compiling frames to movie...')
+    compiler = CompilerClass(config, frames_dir, output_filename, exe=exe, tqdm=tqdm)
+    compiler.compile_all()
 
     exe.close()
+    os.close(fd)

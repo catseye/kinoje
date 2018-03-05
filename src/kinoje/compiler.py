@@ -2,19 +2,38 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from kinoje.utils import LoggingExecutor, load_config_file
+from kinoje.utils import BaseProcessor, Executor, load_config_file, zrange
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
 
 
-class Compiler(object):
-    def __init__(self, dirname, outfilename, config, exe):
+class Compiler(BaseProcessor):
+    def __init__(self, config, dirname, outfilename, **kwargs):
+        super(Compiler, self).__init__(config, **kwargs)
         self.dirname = dirname
-        self.exe = exe
         self.outfilename = outfilename
-        self.config = config
         self.frame_fmt = "%08d.png"
+
+    @classmethod
+    def get_class_for(cls, filename):
+        (whatever, outext) = os.path.splitext(filename)
+        if outext not in SUPPORTED_OUTPUT_FORMATS:
+            raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
+        return {
+            '.gif': GifCompiler,
+            '.mp4': MpegCompiler,
+            '.m4v': MpegCompiler,
+        }[outext]
+
+    def compile(self, num_frames):
+        raise NotImplementedError
+
+    def compile_all(self):
+        tasks = [lambda: self.compile(self.config['num_frames'])]
+        for task in self.tqdm(tasks):
+            result = task()
+        return result
 
 
 class GifCompiler(Compiler):
@@ -23,7 +42,7 @@ class GifCompiler(Compiler):
         # TODO: show some warning if this is not an integer delay
         delay = int(100.0 / self.config['fps'])
 
-        filenames = [os.path.join(self.dirname, self.frame_fmt % f) for f in xrange(0, num_frames)]
+        filenames = [os.path.join(self.dirname, self.frame_fmt % f) for f in zrange(0, num_frames)]
         if self.config.get('shorten_final_frame'):
             filespec = ' '.join(filenames[:-1] + ['-delay', str(delay / 2), filenames[-1]])
         else:
@@ -86,17 +105,8 @@ def main():
     config = load_config_file(options.configfile)
     config['shorten_final_frame'] = options.shorten_final_frame
 
-    exe = LoggingExecutor('compiler.log')
-
-    compiler = {
-        '.gif': GifCompiler,
-        '.mp4': MpegCompiler,
-        '.m4v': MpegCompiler,
-    }[outext](options.framesdir, options.output, config, exe)
-
-    compiler.compile(config['num_frames'])
+    compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output)
+    compiler.compile_all()
 
     if options.view:
         compiler.view()
-
-    exe.close()

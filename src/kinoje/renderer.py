@@ -9,23 +9,23 @@ try:
 except ImportError:
     from yaml import Loader
 
-from kinoje.utils import LoggingExecutor, load_config_file
+from kinoje.utils import BaseProcessor, Executor, load_config_file
 
 
-class Renderer(object):
+class Renderer(BaseProcessor):
     """Takes a source directory filled with text files and a destination directory and
     creates one image file in the destination directory from each text file in the source."""
-    def __init__(self, config, src, dest, exe):
-        self.command = config['command']
-        self.libdir = config['libdir']
+    def __init__(self, config, src, dest, **kwargs):
+        super(Renderer, self).__init__(config, **kwargs)
         self.src = src
         self.dest = dest
-        self.exe = exe
+        self.command = config['command']
+        self.libdir = config['libdir']
         self.width = config['width']
         self.height = config['height']
 
     def render_all(self):
-        for filename in sorted(os.listdir(self.src)):
+        for filename in self.tqdm(sorted(os.listdir(self.src))):
             full_srcname = os.path.join(self.src, filename)
             match = re.match(r'^.*?(\d+).*?$', filename)
             frame = int(match.group(1))
@@ -61,9 +61,5 @@ def main():
 
     config = load_config_file(options.configfile)
 
-    exe = LoggingExecutor('renderer.log')
-
-    renderer = Renderer(config, options.instantsdir, options.framesdir, exe)
+    renderer = Renderer(config, options.instantsdir, options.framesdir)
     renderer.render_all()
-
-    exe.close()

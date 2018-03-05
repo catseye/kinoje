@@ -6,20 +6,18 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import LoggingExecutor, fmod, tween, load_config_file
+from kinoje.utils import BaseProcessor, Executor, fmod, tween, load_config_file, items, zrange
 
 
-class Expander(object):
+class Expander(BaseProcessor):
     """Takes a directory and a template (Jinja2) and expands the template a number of times,
     creating a number of filled-out text files in the directory."""
-    def __init__(self, dirname, template, config, exe):
+    def __init__(self, config, dirname, **kwargs):
+        super(Expander, self).__init__(config, **kwargs)
         self.dirname = dirname
-        self.template = template
-        self.config = config
-        self.exe = exe
-
+        self.template = Template(config['template'])
         self.fun_context = {}
-        for key, value in self.config.get('functions', {}).iteritems():
+        for key, value in items(self.config.get('functions', {})):
             self.fun_context[key] = eval("lambda x: " + value)
 
     def fillout_template(self, frame, t):
@@ -37,6 +35,13 @@ class Expander(object):
         with open(output_filename, 'w') as f:
             f.write(self.template.render(context))
 
+    def expand_all(self):
+        t = self.config['start']
+        t_step = self.config['t_step']
+        for frame in self.tqdm(zrange(self.config['num_frames'])):
+            self.fillout_template(frame, t)
+            t += t_step
+
 
 def main():
     argparser = ArgumentParser()
@@ -51,16 +56,6 @@ def main():
     options = argparser.parse_args(sys.argv[1:])
 
     config = load_config_file(options.configfile)
-    template = Template(config['template'])
 
-    exe = LoggingExecutor('movie.log')
-
-    expander = Expander(options.instantsdir, template, config, exe)
-
-    t = config['start']
-    t_step = config['t_step']
-    for frame in xrange(config['num_frames']):
-        expander.fillout_template(frame, t)
-        t += t_step
-
-    exe.close()
+    expander = Expander(config, options.instantsdir)
+    expander.expand_all()
