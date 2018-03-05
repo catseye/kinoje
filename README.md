@@ -1,7 +1,7 @@
 kinoje
 ======
 
-*Version 0.2.  Subject to backwards-incompatible changes without notice.*
+*Version 0.3.  Subject to backwards-incompatible changes without notice.*
 
 **kinoje** is a templating-based animation tool.  A provided template is filled out once for each
 frame of the animation; the result of the template expansion is used to create a still image; and
@@ -12,7 +12,7 @@ Quick Start
 
 The following are required:
 
-*   **Python** 2.7 — to run the script
+*   **Python** 2.7 or 3.x — to run the script
 *   **PyYAML** and **Jinja2** — to fill out the templates
 *   something to create images from filled-out templates — typically **POV-Ray** or **Inkscape**
 *   **ffmpeg** or **ImageMagick** — to compile the images into a movie file
