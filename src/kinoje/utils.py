@@ -36,7 +36,7 @@ def load_config_file(filename):
     with open(filename, 'r') as file_:
         config = yaml.load(file_, Loader=Loader)
 
-    config['libdir'] = os.path.dirname(filename)
+    config['libdir'] = os.path.dirname(filename) or '.'
 
     config['start'] = float(config.get('start', 0.0))
     config['stop'] = float(config.get('stop', 1.0))
