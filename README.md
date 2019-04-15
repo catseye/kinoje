@@ -14,7 +14,7 @@ The following are required:
 
 *   **Python** 2.7 or 3.x — to run the script
 *   **PyYAML** and **Jinja2** — to fill out the templates
-*   something to create images from filled-out templates — typically **POV-Ray** or **Inkscape**
+*   something to create images from filled-out templates — typically **POV-Ray** or **rsvg**
 *   **ffmpeg** or **ImageMagick** — to compile the images into a movie file
 
 You might also find VLC useful, for viewing the final movie file.
@@ -22,9 +22,13 @@ You might also find VLC useful, for viewing the final movie file.
 On Ubuntu 16.04, you can install these with:
 
     pip install --user Jinja2 PyYAML
-    sudo apt install povray povray-includes inkscape ffmpeg imagemagick vlc
+    sudo apt install povray povray-includes librsvg2 ffmpeg imagemagick vlc
 
-You can then run the tool from the repository directory like so:
+(Or, if you use Docker, you can use the Docker image from
+[this dockerhub repository](https://cloud.docker.com/u/catseye/repository/docker/catseye/kinoje)
+following the instructions given on that page.)
+
+Once installed, you can run the tool from the repository directory like so:
 
     bin/kinoje eg/moebius.yaml
 
