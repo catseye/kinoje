@@ -38,8 +38,8 @@ class Renderer(BaseProcessor):
             infile=full_srcname,
             libdir=self.libdir,
             outfile=full_destname,
-            width=self.width,
-            height=self.height
+            width=int(self.width),
+            height=int(self.height),
         )
         self.exe.do_it(cmd)
 
