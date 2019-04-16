@@ -24,8 +24,8 @@ On Ubuntu 16.04, you can install these with:
     pip install --user Jinja2 PyYAML
     sudo apt install povray povray-includes librsvg2 ffmpeg imagemagick vlc
 
-(Or, if you use Docker, you can use the Docker image from
-[this dockerhub repository](https://cloud.docker.com/u/catseye/repository/docker/catseye/kinoje)
+(Or, if you would like to use Docker, you can pull a Docker image from
+[catseye/kinoje on Docker Hub](https://hub.docker.com/r/catseye/kinoje),
 following the instructions given on that page.)
 
 Once installed, you can run the tool from the repository directory like so:
