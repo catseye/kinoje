@@ -56,6 +56,7 @@ def main():
     argparser.add_argument('framesdir', metavar='DIRNAME', type=str,
         help='Directory that will be populated with images, one for each frame'
     )
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
 
     options = argparser.parse_args(sys.argv[1:])
 

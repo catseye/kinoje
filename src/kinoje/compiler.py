@@ -95,6 +95,7 @@ def main():
     argparser.add_argument("--view", default=False, action='store_true',
         help="Display the resultant movie."
     )
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
 
     options = argparser.parse_args(sys.argv[1:])
 
