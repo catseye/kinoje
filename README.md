@@ -1,7 +1,13 @@
 kinoje
 ======
 
-*Version 0.6.  Subject to backwards-incompatible changes without notice.*
+_Version 0.7_
+| _Entry_ [@ catseye.tc](https://catseye.tc/node/kinoje)
+| _See also:_ [Canvas Feedback](https://github.com/catseye/Canvas-Feedback#readme)
+
+- - - -
+
+<img align="right" src="https://static.catseye.tc/movies/glass-warts.gif" />
 
 **kinoje** is a templating-based animation tool.  A provided template is filled out once for each
 frame of the animation; the result of the template expansion is used to create a still image; and
