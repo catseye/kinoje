@@ -1,7 +1,11 @@
 kinoje
 ======
 
-*Version 0.7.  Subject to backwards-incompatible changes without notice.*
+_Version 0.7_
+| _Entry_ [@ catseye.tc](https://catseye.tc/node/kinoje)
+| _See also:_ [Canvas Feedback](https://github.com/catseye/Canvas-Feedback#readme)
+
+- - - -
 
 <img align="right" src="https://static.catseye.tc/movies/glass-warts.gif" />
 
