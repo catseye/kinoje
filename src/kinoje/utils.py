@@ -64,11 +64,11 @@ class LoggingExecutor(object):
         self.log = open(filename, 'w')
         print("logging to {}".format(self.filename))
 
-    def do_it(self, cmd, **kwargs):
+    def do_it(self, cmd, shell=True, **kwargs):
         self.log.write('>>> {}\n'.format(cmd))
         self.log.flush()
         try:
-            check_call(cmd, shell=True, stdout=self.log, stderr=self.log, **kwargs)
+            check_call(cmd, shell=shell, stdout=self.log, stderr=self.log, **kwargs)
         except Exception as e:
             self.log.close()
             print(str(e))
@@ -80,9 +80,9 @@ class LoggingExecutor(object):
 
 
 class Executor(object):
-    def do_it(self, cmd, **kwargs):
+    def do_it(self, cmd, shell=True, **kwargs):
         print(cmd)
-        check_call(cmd, shell=True, **kwargs)
+        check_call(cmd, shell=shell, **kwargs)
 
     def close(self):
         pass
