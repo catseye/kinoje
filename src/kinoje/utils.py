@@ -58,34 +58,41 @@ def load_config_file(filename):
     return config
 
 
-class LoggingExecutor(object):
+class Executor(object):
+    def __init__(self):
+        self.log = sys.stdout
+
+    def do_it(self, cmd, shell=True, **kwargs):
+        disp_cmd = cmd if shell else ' '.join(cmd)
+        self.log.write('>>> {}\n'.format(disp_cmd))
+        self.log.flush()
+        try:
+            check_call(cmd, shell=shell, stdout=self.log, stderr=self.log, **kwargs)
+        except Exception as exc:
+            self.close()
+            self.cleanup(exc)
+
+    def cleanup(self, exc):
+        print(str(exc))
+        sys.exit(1)
+
+    def close(self):
+        pass
+
+
+class LoggingExecutor(Executor):
     def __init__(self, filename):
         self.filename = filename
         self.log = open(filename, 'w')
         print("logging to {}".format(self.filename))
 
-    def do_it(self, cmd, shell=True, **kwargs):
-        self.log.write('>>> {}\n'.format(cmd))
-        self.log.flush()
-        try:
-            check_call(cmd, shell=shell, stdout=self.log, stderr=self.log, **kwargs)
-        except Exception as e:
-            self.log.close()
-            print(str(e))
-            check_call("tail %s" % self.filename, shell=True)
-            sys.exit(1)
+    def cleanup(self, exc):
+        print(str(exc))
+        check_call(["tail", self.filename])
+        sys.exit(1)
 
     def close(self):
         self.log.close()
-
-
-class Executor(object):
-    def do_it(self, cmd, shell=True, **kwargs):
-        print(cmd)
-        check_call(cmd, shell=shell, **kwargs)
-
-    def close(self):
-        pass
 
 
 def fmod(n, d):
