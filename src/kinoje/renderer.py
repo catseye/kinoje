@@ -3,13 +3,7 @@ import re
 import os
 import sys
 
-import yaml
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
-from kinoje.utils import BaseProcessor, Executor, load_config_file
+from kinoje.utils import BaseProcessor, load_config_file
 
 
 class Renderer(BaseProcessor):

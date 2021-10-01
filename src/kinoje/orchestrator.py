@@ -1,7 +1,5 @@
-from datetime import datetime, timedelta
 from argparse import ArgumentParser
 import os
-import re
 import sys
 from tempfile import mkdtemp, mkstemp
 
@@ -32,8 +30,7 @@ def main():
     )
     argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
 
-    options, unknown = argparser.parse_known_args(sys.argv[1:])
-    remainder = ' '.join(unknown)
+    options, _unknown = argparser.parse_known_args(sys.argv[1:])
 
     if options.output is None:
         (configbase, configext) = os.path.splitext(os.path.basename(options.configfile))

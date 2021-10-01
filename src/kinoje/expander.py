@@ -6,7 +6,7 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import BaseProcessor, Executor, fmod, tween, load_config_file, items, zrange
+from kinoje.utils import BaseProcessor, fmod, tween, load_config_file, items, zrange
 
 
 class Expander(BaseProcessor):
