@@ -52,7 +52,7 @@ def main():
     argparser.add_argument('instantsdir', metavar='DIRNAME', type=str,
         help='Directory that will be populated with instants (text files describing frames)'
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.8")
 
     options = argparser.parse_args(sys.argv[1:])
 

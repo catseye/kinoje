@@ -28,7 +28,7 @@ def main():
              'If not given, a default name will be chosen based on the '
              'configuration filename with a .mp4 extension added.' % (SUPPORTED_OUTPUT_FORMATS,)
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.8")
 
     options, _unknown = argparser.parse_known_args(sys.argv[1:])
 
