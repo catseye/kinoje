@@ -6,7 +6,7 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import BaseProcessor, fmod, tween, load_config_file, items, zrange
+from kinoje.utils import BaseProcessor, fmod, tween, load_config_files, items, zrange
 
 
 class Expander(BaseProcessor):
@@ -47,7 +47,9 @@ def main():
     argparser = ArgumentParser()
 
     argparser.add_argument('configfile', metavar='FILENAME', type=str,
-        help='Configuration file containing the template and parameters'
+        help='Configuration file containing the template and parameters. '
+             'May be a comma-separated list of YAML files, where successive '
+             'files are applied as overlays.'
     )
     argparser.add_argument('instantsdir', metavar='DIRNAME', type=str,
         help='Directory that will be populated with instants (text files describing frames)'
@@ -56,7 +58,7 @@ def main():
 
     options = argparser.parse_args(sys.argv[1:])
 
-    config = load_config_file(options.configfile)
+    config = load_config_files(options.configfile)
 
     expander = Expander(config, options.instantsdir)
     expander.expand_all()

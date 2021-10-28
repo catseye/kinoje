@@ -26,6 +26,16 @@ def zrange(*args):
         return range(*args)
 
 
+def load_config_files(filenames):
+    if ',' in filenames:
+        config = {}
+        for filename in filenames.split(','):
+            config.update(load_config_file(filename))
+        return config
+    else:
+        return load_config_file(filenames)
+
+
 def load_config_file(filename):
     import yaml
     try:

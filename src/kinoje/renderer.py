@@ -3,7 +3,7 @@ import re
 import os
 import sys
 
-from kinoje.utils import BaseProcessor, load_config_file
+from kinoje.utils import BaseProcessor, load_config_files
 
 
 class Renderer(BaseProcessor):
@@ -41,8 +41,10 @@ class Renderer(BaseProcessor):
 def main():
     argparser = ArgumentParser()
 
-    argparser.add_argument('configfile', metavar='FILENAME', type=str,
-        help='Configuration file containing the template and parameters'
+    argparser.add_argument('configfile', metavar='FILENAME(S)', type=str,
+        help='Configuration file containing the template and parameters. '
+             'May be a comma-separated list of YAML files, where successive '
+             'files are applied as overlays.'
     )
     argparser.add_argument('instantsdir', metavar='DIRNAME', type=str,
         help='Directory containing instants (text file descriptions of each single frame) to render'
@@ -54,7 +56,7 @@ def main():
 
     options = argparser.parse_args(sys.argv[1:])
 
-    config = load_config_file(options.configfile)
+    config = load_config_files(options.configfile)
 
     renderer = Renderer(config, options.instantsdir, options.framesdir)
     renderer.render_all()
