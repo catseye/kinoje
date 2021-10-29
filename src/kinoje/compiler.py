@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from kinoje.utils import BaseProcessor, load_config_files, zrange
+from kinoje.utils import BaseProcessor, load_config_file, zrange
 
 
 SUPPORTED_OUTPUT_FORMATS = ('.m4v', '.mp4', '.gif')
@@ -77,10 +77,8 @@ class MpegCompiler(Compiler):
 def main():
     argparser = ArgumentParser()
 
-    argparser.add_argument('configfile', metavar='FILENAME(S)', type=str,
-        help='Configuration file containing the template and parameters. '
-             'May be a comma-separated list of YAML files, where successive '
-             'files are applied as overlays.'
+    argparser.add_argument('configfile', metavar='FILENAME', type=str,
+        help='Configuration file containing the template and parameters'
     )
     argparser.add_argument('framesdir', metavar='DIRNAME', type=str,
         help='Directory that will be populated with image of each single frame'
@@ -107,7 +105,7 @@ def main():
     if outext not in SUPPORTED_OUTPUT_FORMATS:
         raise ValueError("%s not a supported output format (%r)" % (outext, SUPPORTED_OUTPUT_FORMATS))
 
-    config = load_config_files(options.configfile)
+    config = load_config_file(options.configfile)
     config['shorten_final_frame'] = options.shorten_final_frame
 
     compiler = Compiler.get_class_for(options.output)(config, options.framesdir, options.output)

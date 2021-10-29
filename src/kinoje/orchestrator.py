@@ -12,17 +12,15 @@ from kinoje.expander import Expander
 from kinoje.renderer import Renderer
 from kinoje.compiler import Compiler, SUPPORTED_OUTPUT_FORMATS
 
-from kinoje.utils import LoggingExecutor, load_config_files
+from kinoje.utils import LoggingExecutor, load_config_file
 
 
 def main():
     argparser = ArgumentParser()
 
-    argparser.add_argument('configfile', metavar='FILENAME(S)', type=str,
+    argparser.add_argument('configfile', metavar='FILENAME', type=str,
         help='A YAML file containing the template to render for each frame, '
-             'as well as configuration for rendering the template. '
-             'May be a comma-separated list of YAML files, where successive '
-             'files are applied as overlays.'
+             'as well as configuration for rendering the template.'
     )
     argparser.add_argument('-o', '--output', metavar='FILENAME', type=str, default=None,
         help='The movie file to create. The extension of this filename '
@@ -42,7 +40,7 @@ def main():
 
     CompilerClass = Compiler.get_class_for(output_filename)
 
-    config = load_config_files(options.configfile)
+    config = load_config_file(options.configfile)
 
     fd, log_filename = mkstemp()
     exe = LoggingExecutor(log_filename)
