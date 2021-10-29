@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from subprocess import check_call
 
@@ -27,14 +28,24 @@ def zrange(*args):
 
 
 def load_config_file(filename):
+    return load_config_files([filename])
+
+
+def load_config_files(filenames):
     import yaml
     try:
         from yaml import CLoader as Loader
     except ImportError:
         from yaml import Loader
 
-    with open(filename, 'r') as file_:
-        config = yaml.load(file_, Loader=Loader)
+    config = {}
+    for filename in filenames:
+        match = re.match(r'^\+(.*?)\=(.*?)$', filename)
+        if match:
+            config[match.group(1)] = float(match.group(2))
+        else:
+            with open(filename, 'r') as file_:
+                config.update(yaml.load(file_, Loader=Loader))
 
     config['libdir'] = os.path.dirname(filename) or '.'
 
