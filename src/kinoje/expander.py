@@ -21,6 +21,9 @@ class Expander(BaseProcessor):
             self.fun_context[key] = eval("lambda x: " + value)
 
     def fillout_template(self, frame, t):
+        output_filename = os.path.join(self.dirname, "%08d.txt" % frame)
+        if os.path.isfile(output_filename):
+            return
         context = copy(self.config)
         context.update(self.fun_context)
         context.update({
@@ -31,7 +34,6 @@ class Expander(BaseProcessor):
             'tween': tween,
             'fmod': fmod,
         })
-        output_filename = os.path.join(self.dirname, "%08d.txt" % frame)
         with open(output_filename, 'w') as f:
             f.write(self.template.render(context))
 

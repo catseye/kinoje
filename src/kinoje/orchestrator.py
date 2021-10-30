@@ -56,6 +56,7 @@ def main():
     else:
         work_dir =  mkdtemp()
 
+    # TODO: append to this log if it already exists
     log_filename = os.path.join(work_dir, 'kinoje.log')
     exe = LoggingExecutor(log_filename)
 

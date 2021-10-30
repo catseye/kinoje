@@ -25,6 +25,8 @@ class Renderer(BaseProcessor):
             frame = int(match.group(1))
             destname = "%08d.png" % frame
             full_destname = os.path.join(self.dest, destname)
+            if os.path.isfile(full_destname):
+                continue
             self.render(frame, full_srcname, full_destname)
 
     def render(self, frame, full_srcname, full_destname):
