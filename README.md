@@ -18,16 +18,16 @@ Quick Start
 
 The following are required:
 
-*   **Python** 2.7 or 3.x — to run the script
+*   **Python** 3.x — to run the script (2.7 may or may not work)
 *   **PyYAML** and **Jinja2** — to fill out the templates
 *   something to create images from filled-out templates — typically **POV-Ray** or **rsvg**
 *   **ffmpeg** or **ImageMagick** — to compile the images into a movie file
 
 You might also find VLC useful, for viewing the final movie file.
 
-On Ubuntu 16.04, you can install these with:
+On Ubuntu 20.04, you can install these with:
 
-    pip install --user Jinja2 PyYAML
+    pip install --user Jinja2 PyYAML  # you may want to make a virtualenv first
     sudo apt install povray povray-includes librsvg2 ffmpeg imagemagick vlc
 
 (Or, if you would like to use Docker, you can pull a Docker image from
@@ -38,12 +38,26 @@ Once installed, you can run the tool from the repository directory like so:
 
     bin/kinoje eg/moebius.yaml
 
-Since no output filename was given, kinoje assumes MP4 format and automatically picks a reasonable
-filename, in this case `moebius.mp4`.
+Since no output filename was given, kinoje assumes MPEG Layer 4 format and automatically
+picks a reasonable filename, in this case `moebius.mp4`.
+
+Other Invokation Options
+------------------------
 
 You can also ask it to create a GIF by specifying an output filename with that as its file extension:
 
     bin/kinoje eg/squares.yaml -o squares.gif
+
+Multiple configuration files can be specified on the command line; successive
+configurations will act as overlays, overriding the settings in them.  In fact
+individual settings can be given in the format `+name=value`.  For example,
+
+    bin/kinoje eg/moebius.yaml overlays/tiny.yaml +duration=4.0
+
+The `--work-dir` option can be given to make `kinoje` store its working
+files in a specified directory.  The directory will be created if it does
+not yet exist.  If the directory contains incomplete working files from a
+previous run of `kinoje`, the process will continue where it left off.
 
 Theory of Operation
 -------------------
