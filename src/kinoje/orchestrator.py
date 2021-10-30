@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import os
 import sys
-from tempfile import mkdtemp, mkstemp
+from tempfile import mkdtemp
 
 try:
     from tqdm import tqdm
