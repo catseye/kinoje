@@ -3,13 +3,7 @@ import re
 import os
 import sys
 
-import yaml
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
-from kinoje.utils import BaseProcessor, Executor, load_config_file
+from kinoje.utils import BaseProcessor, load_config_file
 
 
 class Renderer(BaseProcessor):
@@ -31,6 +25,8 @@ class Renderer(BaseProcessor):
             frame = int(match.group(1))
             destname = "%08d.png" % frame
             full_destname = os.path.join(self.dest, destname)
+            if os.path.isfile(full_destname):
+                continue
             self.render(frame, full_srcname, full_destname)
 
     def render(self, frame, full_srcname, full_destname):
@@ -56,7 +52,7 @@ def main():
     argparser.add_argument('framesdir', metavar='DIRNAME', type=str,
         help='Directory that will be populated with images, one for each frame'
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.8")
 
     options = argparser.parse_args(sys.argv[1:])
 

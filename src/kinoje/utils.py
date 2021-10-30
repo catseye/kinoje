@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from subprocess import check_call
 
@@ -27,14 +28,24 @@ def zrange(*args):
 
 
 def load_config_file(filename):
+    return load_config_files([filename])
+
+
+def load_config_files(filenames):
     import yaml
     try:
         from yaml import CLoader as Loader
     except ImportError:
         from yaml import Loader
 
-    with open(filename, 'r') as file_:
-        config = yaml.load(file_, Loader=Loader)
+    config = {}
+    for filename in filenames:
+        match = re.match(r'^\+(.*?)\=(.*?)$', filename)
+        if match:
+            config[match.group(1)] = float(match.group(2))
+        else:
+            with open(filename, 'r') as file_:
+                config.update(yaml.load(file_, Loader=Loader))
 
     config['libdir'] = os.path.dirname(filename) or '.'
 
@@ -58,34 +69,41 @@ def load_config_file(filename):
     return config
 
 
-class LoggingExecutor(object):
+class Executor(object):
+    def __init__(self):
+        self.log = sys.stdout
+
+    def do_it(self, cmd, shell=True, **kwargs):
+        disp_cmd = cmd if shell else ' '.join(cmd)
+        self.log.write('>>> {}\n'.format(disp_cmd))
+        self.log.flush()
+        try:
+            check_call(cmd, shell=shell, stdout=self.log, stderr=self.log, **kwargs)
+        except Exception as exc:
+            self.close()
+            self.cleanup(exc)
+
+    def cleanup(self, exc):
+        print(str(exc))
+        sys.exit(1)
+
+    def close(self):
+        pass
+
+
+class LoggingExecutor(Executor):
     def __init__(self, filename):
         self.filename = filename
         self.log = open(filename, 'w')
         print("logging to {}".format(self.filename))
 
-    def do_it(self, cmd, **kwargs):
-        self.log.write('>>> {}\n'.format(cmd))
-        self.log.flush()
-        try:
-            check_call(cmd, shell=True, stdout=self.log, stderr=self.log, **kwargs)
-        except Exception as e:
-            self.log.close()
-            print(str(e))
-            check_call("tail %s" % self.filename, shell=True)
-            sys.exit(1)
+    def cleanup(self, exc):
+        print(str(exc))
+        check_call(["tail", self.filename])
+        sys.exit(1)
 
     def close(self):
         self.log.close()
-
-
-class Executor(object):
-    def do_it(self, cmd, **kwargs):
-        print(cmd)
-        check_call(cmd, shell=True, **kwargs)
-
-    def close(self):
-        pass
 
 
 def fmod(n, d):

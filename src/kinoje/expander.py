@@ -6,7 +6,7 @@ import sys
 
 from jinja2 import Template
 
-from kinoje.utils import BaseProcessor, Executor, fmod, tween, load_config_file, items, zrange
+from kinoje.utils import BaseProcessor, fmod, tween, load_config_file, items, zrange
 
 
 class Expander(BaseProcessor):
@@ -21,6 +21,9 @@ class Expander(BaseProcessor):
             self.fun_context[key] = eval("lambda x: " + value)
 
     def fillout_template(self, frame, t):
+        output_filename = os.path.join(self.dirname, "%08d.txt" % frame)
+        if os.path.isfile(output_filename):
+            return
         context = copy(self.config)
         context.update(self.fun_context)
         context.update({
@@ -31,7 +34,6 @@ class Expander(BaseProcessor):
             'tween': tween,
             'fmod': fmod,
         })
-        output_filename = os.path.join(self.dirname, "%08d.txt" % frame)
         with open(output_filename, 'w') as f:
             f.write(self.template.render(context))
 
@@ -52,7 +54,7 @@ def main():
     argparser.add_argument('instantsdir', metavar='DIRNAME', type=str,
         help='Directory that will be populated with instants (text files describing frames)'
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.7")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.8")
 
     options = argparser.parse_args(sys.argv[1:])
 
