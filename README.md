@@ -3,7 +3,7 @@ kinoje
 
 _Version 0.8_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/kinoje)
-| _See also:_ [Canvas Feedback](https://github.com/catseye/Canvas-Feedback#readme)
+| _See also:_ [Canvas Feedback](https://codeberg.org/catseye/Canvas-Feedback#canvas-feedback)
 
 - - - -
 
